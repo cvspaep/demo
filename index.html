@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Switch File Access</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #0f0f23;
+            color: #fff;
+            margin: 0;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .file-input {
+            display: none;
+        }
+        
+        .file-button {
+            background: #e60012;
+            color: white;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 18px;
+            cursor: pointer;
+            margin: 10px;
+            display: inline-block;
+            text-decoration: none;
+        }
+        
+        .file-button:hover {
+            background: #cc0010;
+        }
+        
+        .auto-trigger {
+            margin-top: 20px;
+            padding: 10px;
+            background: #333;
+            border-radius: 5px;
+        }
+        
+        #file-list {
+            margin-top: 20px;
+            text-align: left;
+            background: #1a1a2e;
+            padding: 15px;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Nintendo Switch File Access</h1>
+        <p>Click the button below to access files on your SD card:</p>
+        
+        <!-- Multiple file input types to trigger different pickers -->
+        <input type="file" id="fileInput" class="file-input" multiple webkitdirectory>
+        <input type="file" id="fileInputSingle" class="file-input" multiple>
+        <input type="file" id="fileInputAny" class="file-input" accept="*/*" multiple>
+        
+        <button class="file-button" onclick="triggerFilePicker('fileInput')">
+            Browse SD Card Folders
+        </button>
+        
+        <button class="file-button" onclick="triggerFilePicker('fileInputSingle')">
+            Browse Files
+        </button>
+        
+        <button class="file-button" onclick="triggerFilePicker('fileInputAny')">
+            Browse All Files
+        </button>
+        
+        <div class="auto-trigger">
+            <label>
+                <input type="checkbox" id="autoTrigger"> Auto-trigger file picker on page load
+            </label>
+        </div>
+        
+        <div id="file-list"></div>
+    </div>
+
+    <script>
+        // Function to trigger file picker
+        function triggerFilePicker(inputId) {
+            const fileInput = document.getElementById(inputId);
+            fileInput.click();
+        }
+        
+        // Auto-trigger on page load if checkbox is checked
+        window.addEventListener('load', function() {
+            // Small delay to ensure page is fully loaded
+            setTimeout(function() {
+                const autoTrigger = document.getElementById('autoTrigger');
+                if (autoTrigger.checked) {
+                    triggerFilePicker('fileInputAny');
+                }
+            }, 1000);
+        });
+        
+        // Handle file selection for all inputs
+        function handleFileSelect(event) {
+            const files = event.target.files;
+            const fileList = document.getElementById('file-list');
+            
+            if (files.length > 0) {
+                let html = '<h3>Selected Files:</h3><ul>';
+                for (let i = 0; i < files.length; i++) {
+                    const file = files[i];
+                    html += `<li>
+                        <strong>${file.name}</strong><br>
+                        Size: ${formatFileSize(file.size)}<br>
+                        Type: ${file.type || 'Unknown'}<br>
+                        Last Modified: ${new Date(file.lastModified).toLocaleString()}
+                    </li><br>`;
+                }
+                html += '</ul>';
+                fileList.innerHTML = html;
+            }
+        }
+        
+        // Format file size
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+        
+        // Add event listeners to all file inputs
+        document.getElementById('fileInput').addEventListener('change', handleFileSelect);
+        document.getElementById('fileInputSingle').addEventListener('change', handleFileSelect);
+        document.getElementById('fileInputAny').addEventListener('change', handleFileSelect);
+        
+        // Alternative methods to trigger file picker
+        function forceFilePicker() {
+            // Create a temporary file input
+            const tempInput = document.createElement('input');
+            tempInput.type = 'file';
+            tempInput.multiple = true;
+            tempInput.accept = '*/*';
+            tempInput.style.display = 'none';
+            
+            tempInput.addEventListener('change', handleFileSelect);
+            
+            document.body.appendChild(tempInput);
+            tempInput.click();
+            
+            // Clean up
+            setTimeout(() => {
+                document.body.removeChild(tempInput);
+            }, 1000);
+        }
+        
+        // Try to trigger immediately on certain conditions
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check if we're likely in the Switch browser
+            const userAgent = navigator.userAgent.toLowerCase();
+            const isSwitch = userAgent.includes('nintendo') || userAgent.includes('switch');
+            
+            if (isSwitch) {
+                // Add a small delay then auto-trigger
+                setTimeout(() => {
+                    console.log('Detected Switch browser, auto-triggering file picker');
+                    forceFilePicker();
+                }, 2000);
+            }
+        });
+        
+        // Additional trigger methods
+        document.addEventListener('click', function(e) {
+            if (e.target.tagName === 'BODY') {
+                // Clicking anywhere on the body triggers file picker
+                forceFilePicker();
+            }
+        });
+        
+        // Keyboard shortcuts
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'f' || e.key === 'F') {
+                forceFilePicker();
+            }
+        });
+    </script>
+</body>
+</html>
